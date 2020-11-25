@@ -32,6 +32,8 @@ vec<N> vec<N>::operator =(double c)
 {
 	for (int i = 0; i < N; i++)
 		(*this)[i] = c;
+
+	return *this;
 }
 
 template<size_t N>
@@ -176,7 +178,7 @@ size_t argmax(vec<N> v)
 	return temp;
 }
 
-double toDouble(vec<1> v)
+inline double toDouble(vec<1> v)
 {
 	return v[0];
 }
@@ -216,6 +218,8 @@ public:
 	Matrix<M, N> operator /(double c);
 	Matrix<M, N> operator /(vec<M> v);
 	Matrix<M, N> operator /(Matrix<M, N> A);
+
+	Matrix<M, N> operator =(double c);
 
 	Matrix<N, M> T();
 
@@ -371,6 +375,15 @@ Matrix<M, N> Matrix < M, N>::operator /(Matrix<M, N> A)
 		temp[i] = (*this)[i] / A[i];
 	return temp;
 }
+template<size_t M, size_t N>
+Matrix<M, N> Matrix<M, N>::operator =(double c)
+{
+	for (int i = 0; i < M; i++)
+		(*this)[i] = c;
+
+	return *this;
+}
+
 
 template<size_t M, size_t N>
 Matrix<N, M> Matrix<M, N>::T()
@@ -396,7 +409,7 @@ Matrix<M, P> dot(Matrix<M, N> A, Matrix<N, P> B)
 }
 
 template<size_t M, size_t N, size_t P>
-Matrix<M, P> dotT(Matrix<M, N> A, Matrix<P,N> BT)
+Matrix<M, P> outer(Matrix<M, N> A, Matrix<P,N> BT)
 {
 	Matrix<M, P> temp;
 	for (int i = 0; i < M; i++)
@@ -513,7 +526,7 @@ Matrix<M, N> outer(vec<M> u, vec<N> v)
 {
 	Matrix<M, N> temp;
 	for (int i = 0; i < M; i++)
-		for (int j = 0; j < n; j++)
+		for (int j = 0; j < N; j++)
 			temp[i][j] = u[i] * v[j];
 
 	return temp;

@@ -1,4 +1,7 @@
-#include"LayerCore.cpp"
+#ifndef DENSELAYER
+#define DENSELAYER
+#include"LayerCore.h"
+#include"Matrix.h"
 #include<random>
 
 
@@ -6,21 +9,29 @@ template<size_t O>
 class VecOutLayer : public virtual Layer
 {
 public:
-	VecOutLayer(){}
+	VecOutLayer() { outputgrad = 1.0; }
 
 	VecOutLayer(vec<O> v)
 	{
 		output = v;
 	}
 	vec<O> output;
-	vec<O> ouputgrad;
+	vec<O> outputgrad;
+
+	void set(vec<O> v)
+	{
+		output = v;
+	}
 
 };
 
 template<size_t I , size_t O>
-class DenseLayer : public VecOutLayer<O>
+class DenseLayer : public virtual VecOutLayer<O>
 {
 protected:
+
+	std::default_random_engine gen;
+
 	VecOutLayer<I>* prevVec;
 
 	Matrix<O, I> W;
@@ -37,11 +48,16 @@ protected:
 
 public:
 
+	DenseLayer()
+	{
+		learningRate = 0.1;
+	}
+
 	DenseLayer(VecOutLayer<I>& input, double alpha = 0.1)
 	{
-		prev = &input;
+		this->prev = &input;
 		input.next = this;
-		prevVec = &input;
+		this->prevVec = &input;
 		learningRate = alpha;
 	}
 
@@ -60,13 +76,13 @@ public:
 	{
 		preprocessForward();
 		for (int i = 0; i < O; i++)
-			output[i] = activation(Z[i]);
+			this->output[i] = this->activation(Z[i]);
 	}
 
 	virtual void backProp()
 	{
 		for (int i = 0; i < O; i++)
-			dZ[i] = outputgrad[i] * activationgrad(Z[i]);
+			dZ[i] = this->outputgrad[i] * this->activationgrad(Z[i]);
 		
 		preprocessBackward();
 
@@ -74,30 +90,36 @@ public:
 
 	virtual void update()
 	{
-		W = W - learningRate * dW;
-		b = b - learningRate * db;
+		W = W - dW * learningRate;
+		b = b - db * learningRate;
 	}
 
 	virtual void initialize()
 	{
-		std::normal_distribution n(0, 1 / I);
+		std::normal_distribution<double> n(0, 1.0 / I);
 		for (int i = 0; i < O; i++)
 			for (int j = 0; j < I; j++)
-				W[i][j] = n();
+				W[i][j] = n(gen);
 
-		b = 0;
-		Z = 0;
-		dW = 0;
-		db = 0;
-		dZ = 0;
+		b = 0.0;
+		Z = 0.0;
+		dW = 0.0;
+		db = 0.0;
+		dZ = 0.0;
+		learningRate = 0.1;
 
 	}
 
 	virtual void attach(VecOutLayer<I> & L)
 	{
-		prev = &L;
-		prevVec = &L
+		this->prev = &L;
+		this->prevVec = &L;
 		L.next = this;
 	}
 
 };
+
+
+
+
+#endif DENSELAYER

@@ -1,7 +1,7 @@
 #ifndef LAYERCORE
 #define LAYERCORE
 
-#include"Matrix.cpp"
+
 #include<cmath>
 
 
@@ -16,14 +16,20 @@ public:
 
 public:
 
+	Layer()
+	{
+		next = nullptr;
+		prev = nullptr;
+	}
+
 	virtual void initialize(){}
 	//preprocessing functions for layer.
 	virtual void preprocessForward(){}
 	virtual void preprocessBackward(){}
 
 	//activation function information for layer.
-	virtual double activation(double x) { return x; }
-	virtual double activationgrad(double x) { return 1; }
+	virtual double activation(double x) = 0;
+	virtual double activationgrad(double x) = 0;
 
 	//parameter update function
 	virtual void update(){}
