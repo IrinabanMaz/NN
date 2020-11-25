@@ -115,8 +115,8 @@ int main()
 
 	 if (j % 10 == 0)
 	 {
-		 std::cout << "Train set accuracy after " << j * 10 + 100 << " iterations: " << acc * 100 << "%" << std::endl;
-		 std::cout << "Test set accuracy after " << j * 10 + 100 << " iterations: " << testacc * 100 << "%" << std::endl;
+		 std::cout << "Train set accuracy after " << j * 10 + 100 << " epochs: " << acc * 100 << "%" << std::endl;
+		 std::cout << "Test set accuracy after " << j * 10 + 100 << " epochs: " << testacc * 100 << "%" << std::endl;
 	 }
 
 	correcttrainingcount = 0;
