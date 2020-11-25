@@ -23,6 +23,7 @@ public:
 		output = v;
 	}
 
+
 };
 
 template<size_t I , size_t O>
@@ -48,9 +49,9 @@ protected:
 
 public:
 
-	DenseLayer()
+	DenseLayer(double alpha = 0.1)
 	{
-		learningRate = 0.1;
+		learningRate = alpha;
 	}
 
 	DenseLayer(VecOutLayer<I>& input, double alpha = 0.1)
@@ -110,7 +111,7 @@ public:
 
 	}
 
-	virtual void attach(VecOutLayer<I> & L)
+	virtual void attach(VecOutLayer<I>& L)
 	{
 		this->prev = &L;
 		this->prevVec = &L;
@@ -119,7 +120,49 @@ public:
 
 };
 
+template<size_t O>
+class DropoutLayer : public VecOutLayer<O>
+{
+private:
+	double keepRate;
+	std::default_random_engine gen;
 
+	VecOutLayer<O>* prevVec;
+	
+	vec<O> mask;
+public:
+	DropoutLayer(double r)
+	{
+		keepRate = r;
+	}
+
+	void forwardProp()
+	{
+		std::uniform_real_distribution<double> p(0.0, 1.0);
+		for (int i = 0; i < O; i++)
+			mask[i] = (p(gen) < keepRate) ? 1.0 : 0.0;
+
+			this->output = this->prevVec->output * mask;
+	}
+
+	void backProp()
+	{
+		this->prevVec->outputgrad = this->outputgrad * mask;
+	}
+
+	void predict()
+	{
+		this->output = this->prevVec->output;
+	}
+
+	
+	void attach(VecOutLayer<O>& L)
+	{
+		this->prev = &L;
+		this->prevVec = &L;
+		L.next = this;
+	}
+};
 
 
 #endif DENSELAYER

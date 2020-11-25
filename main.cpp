@@ -1,13 +1,18 @@
 #include "BinaryClassification.h"
-#include<cmath>
 
 
 template<size_t I, size_t O>
 class testHiddenLayer : public DenseLayer<I,O> ,public LeakyReLU
-{};
+{
+public:
+	testHiddenLayer(double alpha = 0.1)
+	{
+		this->learningRate = alpha;
+	}
+};
 
 
-//uses a neural network to learn the unit sphere in R^n
+//uses a neural network to learn the unit ball in R^n
 int main()
 {
 	//set data sizes
@@ -15,7 +20,7 @@ int main()
 	const size_t TEST_SET_SIZE = 100;
 
 	//set input size.
-	const size_t INPUT_SIZE = 3;
+	const size_t INPUT_SIZE = 2;
 
 	//training data storage
 	static Matrix<TRAINING_SET_SIZE, INPUT_SIZE> trainx;
@@ -57,24 +62,37 @@ int main()
 	}
 	
 	//set network structure parameters.
-	const size_t HIDDEN_LAYER1_SIZE = 10;
-	const size_t HIDDEN_LAYER2_SIZE = 5;
+	const size_t HIDDEN_LAYER1_SIZE = 20;
+	const size_t HIDDEN_LAYER2_SIZE = 10;
+	const size_t HIDDEN_LAYER3_SIZE =  5;
+
+	//determine hyperpaameters
+	const double KEEP_RATE = 0.5;
+	const double LEARNING_RATE = 0.001;
 
 	//declare layers
 	static BCInputLayer<INPUT_SIZE> Input;
-	static testHiddenLayer<INPUT_SIZE, HIDDEN_LAYER1_SIZE> Layer1;
-	static testHiddenLayer<HIDDEN_LAYER1_SIZE, HIDDEN_LAYER2_SIZE> Layer2;
-	static BCOutputLayer<HIDDEN_LAYER2_SIZE> Output;
+	static testHiddenLayer<INPUT_SIZE, HIDDEN_LAYER1_SIZE> Layer1(LEARNING_RATE);
+	static DropoutLayer<HIDDEN_LAYER1_SIZE> Dropout1(KEEP_RATE);
+	static testHiddenLayer<HIDDEN_LAYER1_SIZE, HIDDEN_LAYER2_SIZE> Layer2(LEARNING_RATE);
+	static DropoutLayer<HIDDEN_LAYER2_SIZE> Dropout2(KEEP_RATE);
+	static testHiddenLayer<HIDDEN_LAYER2_SIZE, HIDDEN_LAYER3_SIZE> Layer3(LEARNING_RATE);
+	static DropoutLayer<HIDDEN_LAYER3_SIZE> Dropout3(KEEP_RATE);
+	static BCOutputLayer<HIDDEN_LAYER3_SIZE> Output;
 
 	//attach layers
 	Layer1.attach(Input);
-	Layer2.attach(Layer1);
-	Output.attach(Layer2);
+	Dropout1.attach(Layer1);
+	Layer2.attach(Dropout1);
+	Dropout2.attach(Layer2);
+	Layer3.attach(Dropout2);
+	Dropout3.attach(Layer3);
+	Output.attach(Dropout3);
 
 	//create network interface.
-	BinaryClassificationNetwork<INPUT_SIZE, HIDDEN_LAYER2_SIZE> testBC(&Input , &Output);
+	BinaryClassificationNetwork<INPUT_SIZE, HIDDEN_LAYER3_SIZE> testBC(&Input , &Output);
 
-	//self explanatory.
+
 	testBC.initialize();
 	
 	double predicty;
@@ -84,10 +102,10 @@ int main()
 	double testacc;
 	
 
-	for (int j = 0; j < 100; j++)
+	for (int j = 1; j <= 1000; j++)
 	{
 		//train for 10 iterations.
-		train<INPUT_SIZE , HIDDEN_LAYER2_SIZE , TRAINING_SET_SIZE>(testBC, trainx, trainy, 10);
+		train<INPUT_SIZE , HIDDEN_LAYER3_SIZE , TRAINING_SET_SIZE>(testBC, trainx, trainy, 10);
 
 		//measure performance on training set.
 		for (int i = 0; i < TRAINING_SET_SIZE; i++)
@@ -115,8 +133,8 @@ int main()
 
 	 if (j % 10 == 0)
 	 {
-		 std::cout << "Train set accuracy after " << j * 10 + 100 << " epochs: " << acc * 100 << "%" << std::endl;
-		 std::cout << "Test set accuracy after " << j * 10 + 100 << " epochs: " << testacc * 100 << "%" << std::endl;
+		 std::cout << "Train set accuracy after " << j * 10 << " epochs: " << acc * 100 << "%" << std::endl;
+		 std::cout << "Test set accuracy after " << j * 10  << " epochs: " << testacc * 100 << "%" << std::endl;
 	 }
 
 	correcttrainingcount = 0;

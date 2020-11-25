@@ -4,7 +4,7 @@
 #include "Activations.h"
 
 template<size_t I>
-class BCInputLayer : public VecOutLayer<I>, public Identity
+class BCInputLayer : public VecOutLayer<I>
 {};
 
 template<size_t N>
@@ -36,17 +36,17 @@ public:
 		}
 	}
 
-	double forwardprop(vec<I> in, double label)
+	double forwardprop(vec<I>& in, double label)
 	{
 		Layer* iter = inputLayer;
 		inputLayer->set(in);
 		while(iter != outputLayer)
 		{
-			iter->predict();
+			iter->forwardprop();
 			iter = iter->next;
 		}
 		outputLayer->label = label;
-		outputLayer->predict();
+		outputLayer->forwardprop();
 
 		return toDouble(outputLayer->output);
 	}
@@ -73,16 +73,26 @@ public:
 		}
 	}
 
-	double predict(vec<I> in)
+	double predict(vec<I>& in)
 	{
-		double temp = forwardprop(in, 1.0);
+		Layer* iter = inputLayer;
+		inputLayer->set(in);
+		while (iter != outputLayer)
+		{
+			iter->predict();
+			iter = iter->next;
+		}
+		outputLayer->label = 1.0;
+		outputLayer->predict();
+		double temp = toDouble(outputLayer->output);
+
 		return exp(-temp);
 	}
 
 };
 
 template<size_t I , size_t N , size_t TSS>
-void train(BinaryClassificationNetwork<I,N> bcn,Matrix<TSS, I> trainx, vec<TSS> trainy, int numEpochs = 10)
+void train(BinaryClassificationNetwork<I,N> & bcn,Matrix<TSS, I>& trainx, vec<TSS>& trainy, int numEpochs = 10)
 	{
 		for (int i = 0; i < numEpochs; i++)
 		{

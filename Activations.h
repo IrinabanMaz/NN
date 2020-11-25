@@ -2,6 +2,7 @@
 #define ACTIVATIONS
 #include"LayerCore.h"
 
+/*
 class Identity : public virtual Layer
 {
 	double activation(double x)
@@ -14,6 +15,7 @@ class Identity : public virtual Layer
 	}
 };
 
+*/
 //ReLU activation.
 class ReLU : public virtual Layer
 {

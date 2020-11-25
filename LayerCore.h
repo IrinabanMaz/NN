@@ -23,13 +23,14 @@ public:
 	}
 
 	virtual void initialize(){}
+
 	//preprocessing functions for layer.
 	virtual void preprocessForward(){}
 	virtual void preprocessBackward(){}
 
 	//activation function information for layer.
-	virtual double activation(double x) = 0;
-	virtual double activationgrad(double x) = 0;
+	virtual double activation(double x) { return x; }
+	virtual double activationgrad(double x) { return 1; }
 
 	//parameter update function
 	virtual void update(){}
@@ -41,6 +42,8 @@ public:
 	//prediction function.
 	virtual void predict(){}
 	
+	//forward prop function
+	virtual void forwardprop(){predict();}
 
 	virtual void backProp(){}
 
