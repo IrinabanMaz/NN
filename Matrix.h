@@ -193,30 +193,46 @@ std::ostream& operator <<(std::ostream& o, vec<N> v)
 	return o;
 }
 
+template<size_t N2, size_t N1 >
+vec<N2> subvector(vec<N1> A, size_t pos)
+{
+
+	if ( pos + N2 > N1)
+		std::cout << "Warning, submatrix out of bounds." << std::endl;
+
+	vec<N2> sub;
+
+		for (int i = pos; i < pos + N2; i++)
+			sub[i - pos] = A[i];
+
+	return sub;
+}
+
+
 template<size_t M,size_t N>
 class Matrix : public std::array<vec<N>, M>
 {
 public:
 	Matrix<M,N> operator +(double c);
 	friend Matrix<M, N>  operator +(double c, Matrix<M, N> A);
-	Matrix<M, N> operator +(vec<M> v);
-	friend Matrix<M, N>  operator +(vec<M> v, Matrix<M, N> A);
+	Matrix<M, N> operator +(vec<N> v);
+	friend Matrix<M, N>  operator +(vec<N> v, Matrix<M, N> A);
 	Matrix<M, N>  operator +(Matrix<M, N> A);
 
 	Matrix<M, N> operator -(double c);
 	friend Matrix<M, N> operator -(double c, Matrix<M, N> A);
-	Matrix<M, N> operator -(vec<M> v);
-    friend Matrix<M, N>  operator -(vec<M> v, Matrix<M, N> A);
+	Matrix<M, N> operator -(vec<N> v);
+    friend Matrix<M, N>  operator -(vec<N> v, Matrix<M, N> A);
 	Matrix<M, N> operator -(Matrix<M, N> A);
 
 	Matrix<M, N> operator *(double c);
 	friend Matrix<M, N> operator *(double c, Matrix<M, N> A);
-	Matrix<M, N> operator *(vec<M> v);
-	friend Matrix<M, N>  operator *(vec<M> v, Matrix<M, N> A);
+	Matrix<M, N> operator *(vec<N> v);
+	friend Matrix<M, N>  operator *(vec<N> v, Matrix<M, N> A);
 	Matrix<M, N> operator *(Matrix<M, N> A);
 
 	Matrix<M, N> operator /(double c);
-	Matrix<M, N> operator /(vec<M> v);
+	Matrix<M, N> operator /(vec<N> v);
 	Matrix<M, N> operator /(Matrix<M, N> A);
 
 	Matrix<M, N> operator =(double c);
@@ -243,19 +259,19 @@ Matrix<M, N> operator +(double c, Matrix<M, N> A)
 	return temp;
 }
 template<size_t M, size_t N>
-Matrix<M, N> Matrix<M, N>::operator +(vec<M> v)
+Matrix<M, N> Matrix<M, N>::operator +(vec<N> v)
 {
 	Matrix<M, N> temp;
 	for (int i = 0; i < M; i++)
-		temp[i] = (*this)[i] + v[i];
+		temp[i] = (*this)[i] + v;
 	return temp;
 }
 template<size_t M, size_t N>
-Matrix<M, N> operator +(vec<M> v, Matrix<M, N> A)
+Matrix<M, N> operator +(vec<N> v, Matrix<M, N> A)
 {
 	Matrix<M, N> temp;
 	for (int i = 0; i < M; i++)
-		temp[i] = v[i] + A[i];
+		temp[i] = v + A[i];
 }
 template<size_t M, size_t N>
 Matrix<M, N> Matrix < M, N>::operator +(Matrix<M, N> A)
@@ -284,19 +300,19 @@ Matrix<M, N> operator -(double c, Matrix<M, N> A)
 	return temp;
 }
 template<size_t M, size_t N>
-Matrix<M, N> Matrix<M, N>::operator -(vec<M> v)
+Matrix<M, N> Matrix<M, N>::operator -(vec<N> v)
 {
 	Matrix<M, N> temp;
 	for (int i = 0; i < M; i++)
-		temp[i] = (*this)[i] - v[i];
+		temp[i] = (*this)[i] - v;
 	return temp;
 }
 template<size_t M, size_t N>
-Matrix<M, N> operator -(vec<M> v, Matrix<M, N> A)
+Matrix<M, N> operator -(vec<N> v, Matrix<M, N> A)
 {
 	Matrix<M, N> temp;
 	for (int i = 0; i < M; i++)
-		temp[i] = v[i] - A[i];
+		temp[i] = v - A[i];
 }
 template<size_t M, size_t N>
 Matrix<M, N> Matrix < M, N>::operator -(Matrix<M, N> A)
@@ -325,19 +341,19 @@ Matrix<M, N> operator *(double c, Matrix<M, N> A)
 	return temp;
 }
 template<size_t M, size_t N>
-Matrix<M, N> Matrix<M, N>::operator *(vec<M> v)
+Matrix<M, N> Matrix<M, N>::operator *(vec<N> v)
 {
 	Matrix<M, N> temp;
 	for (int i = 0; i < M; i++)
-		temp[i] = (*this)[i] * v[i];
+		temp[i] = (*this)[i] * v;
 	return temp;
 }
 template<size_t M, size_t N>
-Matrix<M, N> operator *(vec<M> v, Matrix<M, N> A)
+Matrix<M, N> operator *(vec<N> v, Matrix<M, N> A)
 {
 	Matrix<M, N> temp;
 	for (int i = 0; i < M; i++)
-		temp[i] = v[i] * A[i];
+		temp[i] = v * A[i];
 }
 template<size_t M, size_t N>
 Matrix<M, N> Matrix < M, N>::operator *(Matrix<M, N> A)
@@ -359,11 +375,11 @@ Matrix<M,N> Matrix<M,N>::operator /(double c)
 }
 
 template<size_t M, size_t N>
-Matrix<M, N> Matrix<M, N>::operator /(vec<M> v)
+Matrix<M, N> Matrix<M, N>::operator /(vec<N> v)
 {
 	Matrix<M, N> temp;
 	for (int i = 0; i < M; i++)
-		temp[i] = (*this)[i] / v[i];
+		temp[i] = (*this)[i] / v;
 	return temp;
 }
 
@@ -408,6 +424,8 @@ Matrix<M, P> dot(Matrix<M, N> A, Matrix<N, P> B)
 	return temp;
 }
 
+
+
 template<size_t M, size_t N, size_t P>
 Matrix<M, P> outer(Matrix<M, N> A, Matrix<P,N> BT)
 {
@@ -418,7 +436,11 @@ Matrix<M, P> outer(Matrix<M, N> A, Matrix<P,N> BT)
 
 	return temp;
 }
-
+template<size_t M, size_t N, size_t P>
+Matrix<M, N> inner(Matrix<P, M> A, Matrix<P, N> B)
+{
+	return dot(A.T(), B);
+}
 template<size_t M, size_t N>
 vec<M> dot(Matrix<M, N> A, vec<N> v)
 {
@@ -442,7 +464,8 @@ vec<M> colsum(Matrix<M, N> A)
 template<size_t M, size_t N>
 vec<N> rowsum(Matrix<M, N> A)
 {
-	vec<N> temp = 0;
+	vec<N> temp;
+	temp = 0.0;
 	for (int j = 0; j < N; j++)
 		for (int i = 0; i < M; i++)
 			temp[j] += A[i][j];
@@ -530,6 +553,27 @@ Matrix<M, N> outer(vec<M> u, vec<N> v)
 			temp[i][j] = u[i] * v[j];
 
 	return temp;
+}
+
+template<size_t M2 , size_t N2 , size_t M1 , size_t N1 > 
+Matrix<M2, N2> submatrix(Matrix<M1, N1> A, size_t xpos, size_t ypos)
+{
+
+	if ((xpos + M2 > M1) || (ypos + N2 > N1))
+	{
+		std::cout << "Warning, submatrix out of bounds. " << std::endl;
+		std::cout << "Matrix dims: " << M1 << " x " << N1 << std::endl;
+		std::cout << "subMatrix dims: " << M2 << " x " << N2 << std::endl;
+		std::cout << "at coordinate: (" << xpos << ", " << ypos << ")" << std::endl;
+	}
+
+	Matrix<M2, N2> sub;
+
+	for (int i = xpos; i < xpos + M2; i++)
+		for (int j = ypos; j < ypos + N2; j++)
+			sub[i - xpos][j - ypos] = A[i][j];
+
+	return sub;
 }
 
 #endif MATRIX

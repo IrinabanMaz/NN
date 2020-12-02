@@ -70,7 +70,7 @@ public:
 	{
 		dW = outer(dZ, prevVec->output);
 		db = dZ;
-		prevVec->outputgrad = dot(W.T(), dZ);
+		prevVec->outputgrad = inner(W, dZ);
 	}
 
 	virtual void predict()
@@ -107,7 +107,6 @@ public:
 		dW = 0.0;
 		db = 0.0;
 		dZ = 0.0;
-		learningRate = 0.1;
 
 	}
 

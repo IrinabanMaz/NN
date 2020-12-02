@@ -1,8 +1,8 @@
-#include "BinaryClassification.h"
+#include "BatchBC.h"
 
 
-template<size_t I, size_t O>
-class testHiddenLayer : public DenseLayer<I,O> ,public LeakyReLU
+template<size_t B , size_t I, size_t O>
+class testHiddenLayer : public BatchDenseLayer<B,I,O> ,public LeakyReLU
 {
 public:
 	testHiddenLayer(double alpha = 0.1)
@@ -16,7 +16,8 @@ public:
 int main()
 {
 	//set data sizes
-	const size_t TRAINING_SET_SIZE = 1 << 8;
+	const size_t TRAINING_SET_SIZE = 1 << 14;
+	const size_t BATCH_SIZE = 1 << 6;
 	const size_t TEST_SET_SIZE = 100;
 
 	//set input size.
@@ -62,35 +63,29 @@ int main()
 	}
 	
 	//set network structure parameters.
-	const size_t HIDDEN_LAYER1_SIZE = 20;
-	const size_t HIDDEN_LAYER2_SIZE = 10;
-	const size_t HIDDEN_LAYER3_SIZE =  5;
-
+	const size_t HIDDEN_LAYER1_SIZE = 10;
+	const size_t HIDDEN_LAYER2_SIZE = 6;
 	//determine hyperpaameters
 	const double KEEP_RATE = 0.5;
-	const double LEARNING_RATE = 0.001;
+	const double LEARNING_RATE = 0.01;
 
 	//declare layers
-	static BCInputLayer<INPUT_SIZE> Input;
-	static testHiddenLayer<INPUT_SIZE, HIDDEN_LAYER1_SIZE> Layer1(LEARNING_RATE);
-	static DropoutLayer<HIDDEN_LAYER1_SIZE> Dropout1(KEEP_RATE);
-	static testHiddenLayer<HIDDEN_LAYER1_SIZE, HIDDEN_LAYER2_SIZE> Layer2(LEARNING_RATE);
-	static DropoutLayer<HIDDEN_LAYER2_SIZE> Dropout2(KEEP_RATE);
-	static testHiddenLayer<HIDDEN_LAYER2_SIZE, HIDDEN_LAYER3_SIZE> Layer3(LEARNING_RATE);
-	static DropoutLayer<HIDDEN_LAYER3_SIZE> Dropout3(KEEP_RATE);
-	static BCOutputLayer<HIDDEN_LAYER3_SIZE> Output;
+	static BBCInputLayer<BATCH_SIZE , INPUT_SIZE> Input;
+	static testHiddenLayer<BATCH_SIZE ,INPUT_SIZE, HIDDEN_LAYER1_SIZE> Layer1(LEARNING_RATE);
+	static BatchDropoutLayer<BATCH_SIZE, HIDDEN_LAYER1_SIZE> Dropout1(KEEP_RATE);
+	static testHiddenLayer<BATCH_SIZE, HIDDEN_LAYER1_SIZE, HIDDEN_LAYER2_SIZE> Layer2(LEARNING_RATE);
+	static BatchDropoutLayer<BATCH_SIZE, HIDDEN_LAYER2_SIZE> Dropout2(KEEP_RATE);
+	static BBCOutputLayer<BATCH_SIZE, HIDDEN_LAYER2_SIZE> Output;
 
 	//attach layers
 	Layer1.attach(Input);
 	Dropout1.attach(Layer1);
 	Layer2.attach(Dropout1);
 	Dropout2.attach(Layer2);
-	Layer3.attach(Dropout2);
-	Dropout3.attach(Layer3);
-	Output.attach(Dropout3);
+	Output.attach(Dropout2);
 
 	//create network interface.
-	BinaryClassificationNetwork<INPUT_SIZE, HIDDEN_LAYER3_SIZE> testBC(&Input , &Output);
+	BatchBinaryClassificationNetwork<BATCH_SIZE,INPUT_SIZE, HIDDEN_LAYER2_SIZE> testBC(&Input , &Output);
 
 
 	testBC.initialize();
@@ -102,10 +97,10 @@ int main()
 	double testacc;
 	
 
-	for (int j = 1; j <= 1000; j++)
+	for (int j = 1; j <= 100; j++)
 	{
-		//train for 10 iterations.
-		train<INPUT_SIZE , HIDDEN_LAYER3_SIZE , TRAINING_SET_SIZE>(testBC, trainx, trainy, 10);
+		//train for 100 epochs.
+		train(testBC, trainx, trainy, 100);
 
 		//measure performance on training set.
 		for (int i = 0; i < TRAINING_SET_SIZE; i++)
@@ -128,17 +123,15 @@ int main()
 				correcttestcount++;
 		}
 
-	 acc = correcttrainingcount / TRAINING_SET_SIZE;
-	 testacc = correcttestcount / TEST_SET_SIZE;
+		acc = correcttrainingcount / TRAINING_SET_SIZE;
+		testacc = correcttestcount / TEST_SET_SIZE;
 
-	 if (j % 10 == 0)
-	 {
-		 std::cout << "Train set accuracy after " << j * 10 << " epochs: " << acc * 100 << "%" << std::endl;
-		 std::cout << "Test set accuracy after " << j * 10  << " epochs: " << testacc * 100 << "%" << std::endl;
-	 }
+		std::cout << "Train set accuracy after " << j * 100 << " epochs: " << acc * 100 << "%" << std::endl;
+		std::cout << "Dev set accuracy after " << j * 100  << " epochs: " << testacc * 100 << "%" << std::endl;
+	
 
-	correcttrainingcount = 0;
-	correcttestcount = 0;
+		correcttrainingcount = 0;
+		correcttestcount = 0;
 	}
 	
 	return 0;

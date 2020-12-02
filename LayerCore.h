@@ -43,7 +43,7 @@ public:
 	virtual void predict(){}
 	
 	//forward prop function
-	virtual void forwardprop(){predict();}
+	virtual void forwardProp(){predict();}
 
 	virtual void backProp(){}
 

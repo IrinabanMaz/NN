@@ -36,17 +36,17 @@ public:
 		}
 	}
 
-	double forwardprop(vec<I>& in, double label)
+	double forwardProp(vec<I>& in, double label)
 	{
 		Layer* iter = inputLayer;
 		inputLayer->set(in);
 		while(iter != outputLayer)
 		{
-			iter->forwardprop();
+			iter->forwardProp();
 			iter = iter->next;
 		}
 		outputLayer->label = label;
-		outputLayer->forwardprop();
+		outputLayer->forwardProp();
 
 		return toDouble(outputLayer->output);
 	}
@@ -91,14 +91,46 @@ public:
 
 };
 
-template<size_t I , size_t N , size_t TSS>
+template<size_t TSS , size_t I , size_t N >
 void train(BinaryClassificationNetwork<I,N> & bcn,Matrix<TSS, I>& trainx, vec<TSS>& trainy, int numEpochs = 10)
 	{
+
+	//variables for shuffling.
+	static std::array<int, TSS> permutation;
+	static bool assigned = false;
+	std::default_random_engine gen;
+	std::uniform_int_distribution<int>* r;
+	int temp;
+	int swapindex;
+
+	//set to identity permutation on first call.
+	if (!assigned)
+	{
+		for (int i = 0; i < TSS; i++)
+			permutation[i] = i;
+
+		assigned = true;
+	}
+
 		for (int i = 0; i < numEpochs; i++)
 		{
+			//loop through permuation to shuffle.
+			for (int k = 0; k < TSS; k++)
+			{
+				
+				r = new std::uniform_int_distribution<int>(k, TSS - 1);
+				swapindex = (*r)(gen);
+				temp = permutation[k];
+				permutation[k] = permutation[swapindex];
+				permutation[swapindex] = temp;
+				delete r;
+
+			}
+		    
+			//loop stochastic gradient descent through training data.
 			for (int j = 0; j < TSS; j++)
 			{
-				bcn.forwardprop(trainx[j], trainy[j]);
+				bcn.forwardProp(trainx[permutation[j]], trainy[permutation[j]]);
 				bcn.backprop();
 				bcn.update();
 			}
