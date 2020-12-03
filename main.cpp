@@ -55,7 +55,7 @@ int main()
 		for(int j = 0; j < INPUT_SIZE;j++)
 			testx[i][j] = p(gen);
 
-		if (dot(trainx[i], trainx[i]) < 1)
+		if (dot(testx[i], testx[i]) < 1)
 			testy[i] = 1.0;
 		else
 			testy[i] = 0.0;
